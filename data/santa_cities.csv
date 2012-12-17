@@ -1,0 +1,257 @@
+
+
+<!DOCTYPE html>
+
+<!--[if lt IE 7 ]><html class="ie ie6 lte7 lte8 lte9"><![endif]-->
+<!--[if IE 7 ]><html class="ie ie7 lte7 lte8 lte9"><![endif]-->
+<!--[if IE 8 ]><html class="ie ie8 lte8 lte9"><![endif]-->
+<!--[if IE 9 ]><html class="ie ie9 lte9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--><html ><!--<![endif]-->
+
+<head>
+    
+    <title>Main Login - Kaggle</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="robots" content="index, follow" />
+    <link href="/content/v/e7918c3028a4/kaggle/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+        <meta name="keywords" content="Kaggle, data science, data mining, forecasting, statistics, prediction, bioinformatics, competitions, contests, crowdsourced analytics" />
+            <meta name="description" content="Kaggle is a platform for data prediction competitions. Companies, organizations and researchers post their data and have it scrutinized by the world&#39;s best statisticians." />
+
+
+        <link rel="stylesheet" href="/content/v/557ab547a3fe/shared/css/base.less" type="text/css" />
+        <link rel="stylesheet" href="/content/v/e18c152f0bc3/kaggle/css/kaggle-site.less" type="text/css" />
+
+    
+    
+        <script type="text/javascript" src="/content/v/47b68dce8cb6/shared/js/jquery-1.7.2.min.js"></script>
+                <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+            <script type="text/javascript" src="/content/v/611247fc868f/shared/js/kaggle.min.js"></script>
+
+    
+    <!--[if (gte IE 6)&(lte IE 8)]>
+      <script type="text/javascript" src="/content/v/f1f17fea7cee/shared/js/selectivizr.min.js"></script>
+    <![endif]-->
+
+    
+                                                                    
+
+    
+    <!--[if lt IE 9]>
+    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body class="logged-out  kaggle">
+    <div id="wrap"><!-- needed for sticky footer -->
+        
+           
+
+<div id="top-bar">
+    <div id="top-bar-inside">
+        
+        
+
+        <ul id="top-bar-links">
+                <li><a href="" class="login-link">Sign in</a>
+    
+                    <div id="top-bar-signin">    
+                        <div id="social-authentication-top">
+    <div id="social-authentication-top-head">
+        Log in<br/>
+        with &mdash;
+    </div>
+    <div id="social-authentication-top-buttons">
+        <a href="/account/authenticate/facebook" class="socialSignIn facebook" title="Log in with Facebook"></a>
+        <a href="/account/authenticate/google" class="socialSignIn google" title="Log in with Google"></a>
+        <a href="/account/authenticate/yahoo" class="socialSignIn yahoo" title="Log in with Yahoo"></a>
+    </div>
+    
+    <script type="text/javascript">
+        var socialSignInLinks = $('a.socialSignIn');
+        socialSignInLinks.attr("href", function(i,v){
+            return v + '?js=1';
+        });
+        socialSignInLinks.click(function(){
+            _gaq.push(['_trackEvent', 'action', 'login', 'top-bar']);
+            return true;
+        });
+    </script>
+</div>
+    
+
+<form action="https://www.kaggle.com/account/login" id="signin" method="post"><input id="returnUrl" name="returnUrl" type="hidden" value="http://www.kaggle.com/account/login?ReturnUrl=%2fc%2ftraveling-santa-problem%2fdownload%2fsanta_cities.csv" /><input data-val="true" data-val-length="The field User name must be a string with a minimum length of 2 and a maximum length of 255." data-val-length-max="255" data-val-length-min="2" data-val-required="The User name field is required." id="UserName" name="UserName" placeholder="Email / username" type="text" value="" /><span class="field-validation-valid" data-valmsg-for="UserName" data-valmsg-replace="true"></span><input data-val="true" data-val-length="The field Password must be a string with a minimum length of 1 and a maximum length of 255." data-val-length-max="255" data-val-length-min="1" data-val-required="The Password field is required." id="Password" name="Password" placeholder="Password" type="password" /><span class="field-validation-valid" data-valmsg-for="Password" data-valmsg-replace="true"></span>    <div id="remember-me">
+        <input data-val="true" data-val-required="The Remember me? field is required." id="RememberMe" name="RememberMe" type="checkbox" value="true" /><input name="RememberMe" type="hidden" value="false" />            
+        <label for="RememberMe">Remember me?</label>
+    </div>   
+    <input type="submit" value="Sign In" />
+<input name="__RequestVerificationToken" type="hidden" value="xd_KHhkm-1pXrxCSowHJjyRwrqDlzDMp0WK_XBvAvtnVsH8APG3AEmmeBu2uUmOHWrwMJxTztdvUrJkZe6mErWyg9T4BQyCCpQIB2TxaPqU6BO8xyZTxfkdjUo28eZhLLaNTAQ2" />    <input id="signinjs" type="hidden" name="JavaScriptEnabled" value="false" />    
+</form>
+<script type="text/javascript">
+    $('#signinjs').attr('value', 'true');
+    $('#signin').submit(function () { _gaq.push(['_trackEvent', 'action', 'login', 'top-bar']); });
+</script>
+
+<div id="forgot-links">        
+    Forgot your <a href="/forgot/username">Username</a> 
+    / 
+    <a href="/forgot/password">Password</a>?
+</div>
+                        
+                    </div><!-- signin -->
+                </li>
+        </ul>             
+    </div>            
+</div>
+
+<script type="text/javascript">
+    $(function() {
+
+        //login box slidedown
+        $('.login-link').click(function(e) {
+            e.preventDefault();
+            $('#top-bar-signin').slideToggle(250, 'easeOutSine', function() { $('#UserName').focus(); });
+
+            if (!$('#hovering-overlay.login-overlay').length) {
+                $('body').append('<div id="hovering-overlay" class="login-overlay" style="z-index:995; display:none; opacity:0.4">&nbsp;</div>');
+                $('#hovering-overlay.login-overlay').fadeIn('fast');
+            } else {
+                $('#hovering-overlay.login-overlay').fadeOut('fast', function() { $(this).remove(); });
+            }
+        });
+
+        // if user clicks grey-out overlay when there is login dialog, kill dialog
+        $('body').on('click', '#hovering-overlay.login-overlay', function() {
+            $('#top-bar-signin').slideToggle(250, 'easeOutSine', function() { $('#UserName').focus(); });
+            $('#hovering-overlay.login-overlay').fadeOut('fast', function() { $(this).remove(); });
+        });
+    });
+</script>
+
+        <div id="header">
+            <div id="header-inside">
+                <div id="logo">
+                    <a href="/"><img alt="Kaggle" height="86" src="/content/v/2c1b6065229c/kaggle/img/site-logo.png" width="240" /></a>
+                </div>
+                <!--logo-->
+                <ul id="top-menu">
+            <li><a href="/account/register"><strong>Sign Up</strong></a></li>        
+
+    <li><a href="/About" title="About Kaggle">About</a></li>
+<li><a href="/Host" title="Learn about hosting your own competition">Hosting Center</a></li>
+<li><a href="/competitions" title="Search or browse all Kaggle competitions">All Competitions</a></li>
+<li><a href="/users" title="View the global Kaggle leaderboard" id="users-link">Users</a></li>
+<li><a href="/forums" title="Kaggle Forums.">Forums</a></li>
+<li><a href="/Wiki" title="Kaggle Public Wiki">Wiki</a></li>
+<li><a href="http://blog.kaggle.com/" title="Visit No Free Hunch, the official Kaggle blog">Blog</a></li>
+<li><a href="/forums/f/145/data-science-jobs" title="View job openings posted by our community">Data Science Jobs</a></li>
+</ul>
+<!-- top-menu -->
+
+            </div> <!-- header-inside -->
+        </div> <!-- header -->
+
+
+        <!-- header-inside and header -->
+        <div id="main">
+             
+            
+
+<div class="validation-summary-valid" data-valmsg-summary="true"><ul><li style="display:none"></li>
+</ul></div>
+<form action="https://www.kaggle.com/account/login" id="login-account" method="post">    <h2>Login to your account</h2>
+    <fieldset id="social-authentication">
+        <a href="/account/authenticate/facebook" class="standaloneSocialSignIn" title="Sign in with Facebook"><img src="/content/v/0f918c7278cb/shared/img/authentication-64-facebook.png" alt="Sign in with Facebook" /></a>
+        <a href="/account/authenticate/google" class="standaloneSocialSignIn" title="Sign in with Google"><img src="/content/v/6e0cc0c3a603/shared/img/authentication-64-google.png" alt="Sign in with Google" /></a>
+        <a href="/account/authenticate/yahoo" class="standaloneSocialSignIn" title="Sign in with Yahoo"><img src="/content/v/593f6325daea/shared/img/authentication-64-yahoo.png" alt="Sign in with Yahoo" /></a>
+        
+    </fieldset> 
+<script type="text/javascript">
+        var standaloneSocialSignInLinks = $('a.standaloneSocialSignIn');
+        standaloneSocialSignInLinks.attr("href", function(i,v){
+            return v + '?js=1';
+        });
+        standaloneSocialSignInLinks.click(function(){
+            _gaq.push(['_trackEvent', 'action', 'login', 'standalone']);
+            return true;
+        });
+    </script>    <fieldset>
+        
+        <div class="field">
+            <label>Email / username</label>
+            <a href="/forgot/username" class="field-forgot-link" tabindex="4">Forgot username?</a>
+            <input data-val="true" data-val-length="The field User name must be a string with a minimum length of 2 and a maximum length of 255." data-val-length-max="255" data-val-length-min="2" data-val-required="The User name field is required." id="UserName" name="UserName" tabindex="1" type="text" value="" />
+            <span class="field-validation-valid" data-valmsg-for="UserName" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="field">
+            <label for="Password">Password</label>
+            <a href="/forgot/password" class="field-forgot-link" tabindex="5">Forgot password?</a>
+            <input data-val="true" data-val-length="The field Password must be a string with a minimum length of 1 and a maximum length of 255." data-val-length-max="255" data-val-length-min="1" data-val-required="The Password field is required." id="Password" name="Password" tabindex="2" type="password" />
+            <span class="field-validation-valid" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="field center">
+            <input id="get-started" type="submit" alt="Login" value = "Login &rarr;" tabindex="3" />
+            <input id="standalonesigninjs" type="hidden" name="JavaScriptEnabled" value="false" />
+        </div>
+          
+    </fieldset>   
+</form>
+<script type="text/javascript">
+    $('#standalonesigninjs').attr('value', 'true');
+    $('#login-account').submit(function () { _gaq.push(['_trackEvent', 'action', 'login', 'standalone']); });
+</script>
+
+<div id="login-page-signup" class="no-oauth">
+    <label>Don't have a Kaggle account? <a href="/account/register" tabindex="6">Sign up &raquo;</a></label>
+</div>
+ 
+
+
+
+        </div> <!-- main -->
+    </div> <!-- wrap -->   
+    <div id="footer">
+        <div id="footer-inside">
+            <div id="footer-copyright">
+                    <div id="social-links">
+            <a class="twitter" href="http://www.twitter.com/kaggle" title="Follow Kaggle on Twitter"></a>     
+                    <a class="facebook" href="http://www.facebook.com/kaggle" title="Follow Kaggle on Facebook"></a>           
+                    <a class="linkedin" href="http://www.linkedin.com/companies/kaggle" title="Follow Kaggle on LinkedIn"></a>        
+    </div><!-- social-links -->
+
+                
+&copy; 2012 Kaggle Inc            </div>
+            <div id="footer-links">
+                <a href="/terms">Terms &amp; Conditions</a> &bull;  
+<a href="/privacy">Privacy Policy</a> &bull;  
+<a href="/team">Our Team</a> &bull;  
+<a href="/careers">Careers</a> &bull;  
+<a href="/contact/press">Press</a> &bull;  
+<a href="/papers">Academic Papers</a> &bull;  
+<a href="/contact">Contact Us</a>
+            </div> <!-- footer-links -->
+        </div> <!-- footer-inside -->
+    </div> <!--footer-->
+    
+        
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-12629138-1']);
+            _gaq.push(['_trackPageview']);
+            _gaq.push(['_trackPageLoadTime']);
+            _gaq.push(['_setCustomVar', 1, 'usertype', 'anonymous', 2]);
+
+            (function () {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+
+    
+
+    <!-- G'day 171.66.35.197! Cheers, Web_IN_0 -->
+</body>
+</html>
