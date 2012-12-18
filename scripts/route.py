@@ -1,7 +1,7 @@
 import numpy as np
 import santa_io as io
 
-def route_greedy(cities=io.load_cities(), start=np.array([0,0])):
+def NN(cities=io.load_cities(), start=np.array([0,0])):
     Nc = cities.shape[0]
     assert(Nc == 150000)
     
@@ -11,3 +11,9 @@ def route_greedy(cities=io.load_cities(), start=np.array([0,0])):
     route[0,:] = start
 
     return route
+
+def greedy(cities=io.load_cities()):
+    Nc = cities.shape[0]
+    assert(Nc == 150000)
+
+    
