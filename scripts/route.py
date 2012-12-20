@@ -9,7 +9,7 @@ def NN_wrapper():
     start = np.zeros(2)
 
     start_min = start
-    start_min = 1e20
+    score_min = 1e20
     while (1):
         start[0] = np.random.randint(0, 150000)
         start[1] = np.random.randint(0, 150000)
