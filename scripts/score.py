@@ -5,8 +5,7 @@ from tools import euclid_dist
 
 def calc_score(cities=io.load_cities(), route=io.load_route()):
     Nc = cities.shape[0]
-    assert(Nc == 150000)  # is there any reason for looking at subset of cities?
-
+    
     # first make sure all cities are visited exactly once for both paths
     np.testing.assert_array_equal(np.sort(route[:,0]), np.arange(Nc))
     np.testing.assert_array_equal(np.sort(route[:,1]), np.arange(Nc))

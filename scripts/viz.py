@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import santa_io as io
+import innout as io
 
-def plot_cities(cities=io.load_cities()):
+def plot_cities(cities=io.load_cities(), route=io.load_route()):
     
-    plt.scatter(cities[:,0], cities[:,1], s=1, c='black', alpha=0.3)
+    plt.scatter(cities[:,0], cities[:,1], s=1, c='black', alpha=0.5)
     plt.axis('tight')
-    route = io.load_route()
     plt.hold(True)
-    plt.plot(cities[route[:,0],0], cities[route[:,0],1], c='red', alpha=0.1)
+    plt.plot(cities[route[:,0],0], cities[route[:,0],1], c='red', alpha=0.3)
+    plt.plot(cities[route[:,1],0], cities[route[:,1],1], c='blue', alpha=0.3)
     plt.show()
     
     
