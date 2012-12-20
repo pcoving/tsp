@@ -4,18 +4,21 @@ from scipy.spatial import cKDTree
 from tools import city_dist
 
 def NN(cities=io.load_cities(), start=np.array([0,0])):
+    '''
+    Nearest neighbor algorithm
+    Routes are built incrementally in a greedy fashion
+    '''
+
     Nc = cities.shape[0]
         
     assert((start[0] < Nc) & (start[1] < Nc) &
            (start[0] >= 0) & (start[1] >= 0))
     
     myroute = [np.zeros(Nc, dtype=int),
-             np.zeros(Nc, dtype=int)]
+               np.zeros(Nc, dtype=int)]
     myroute[0][0] = start[0]
     myroute[1][0] = start[1]
-    
-    tree = cKDTree(cities)
-    
+            
     '''
     the edges array keeps track of edges incident 
     to a city for each route
@@ -38,9 +41,12 @@ def NN(cities=io.load_cities(), start=np.array([0,0])):
     # keep track of distance as we go...
     dist = np.array([0.0, 0.0])
     
+    tree = cKDTree(cities)
     for ic in xrange(Nc-1):
-        print "city: ", ic, " dist: ", dist
         for ir in range(2):
+            if (ic%10000 == 0):
+                print "working on city: ", ic, int(np.max(dist))
+                
             thiscity = myroute[ir][ic] 
             
             assert(edges[ir][thiscity, 0] >= 0)
@@ -54,30 +60,26 @@ def NN(cities=io.load_cities(), start=np.array([0,0])):
                     # check if we've already been here...
                     if (edges[ir][nbr,0] == -1):
                         # eliminate edges in other route...
-                        #print nbr, edges[(ir+1)%2][thiscity, 0], edges[(ir+1)%2][thiscity, 1]
-                        
                         if ((edges[(ir+1)%2][thiscity, 0] != nbr) &
                             (edges[(ir+1)%2][thiscity, 1] != nbr)):
                             nextcity = nbr
                             break
                 
                 if ((knbrs > Nc) & (nextcity == -1)):
-                    print "failed to route everyone"
+                    print "failed to find next city"
                     return
                 knbrs *= 2
                 
-                
+            
             myroute[ir][ic+1] = nextcity
             dist[ir] += city_dist(cities, thiscity, nextcity)
             edges[ir][thiscity, 1] = nextcity
             edges[ir][nextcity, 0] = thiscity
-            
-    return myroute
+        
+    score = int(np.max(dist))
+    print "score: ", score
+    return myroute, dist
 
 def greedy(cities=io.load_cities()):
-    Nc = cities.shape[0]
-    assert(Nc == 150000)
-
-    myroute = np.zeros([Nc, 2])
-
-    return myroute
+    
+    return

@@ -9,6 +9,8 @@ def load_cities():
 
 def load_route(path='../data/random_paths_benchmark.csv'):
     
-    return np.loadtxt(path, delimiter=',', unpack=False,
+    tmp = np.loadtxt(path, delimiter=',', unpack=False,
                       usecols=[0,1], dtype=int, skiprows=1)
+    
+    return [tmp[:,0], tmp[:,1]]
     

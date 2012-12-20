@@ -9,11 +9,12 @@ def euclid_dist(point0, point1):
 def city_dist(cities, ic0, ic1):
     assert(ic0 >= 0)
     assert(ic1 >= 0)
+    
     Nc = cities.shape[0]
     assert(ic0 < Nc)
     assert(ic1 < Nc)
     
     return np.sqrt(np.power(cities[ic1, 0] - cities[ic0, 0], 2) + 
-                   np.power(cities[ic1, 1] - cities[ic1, 0], 2))
+                   np.power(cities[ic1, 1] - cities[ic0, 1], 2))
     
 
