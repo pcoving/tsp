@@ -73,7 +73,7 @@ def NN(cities=io.load_cities(), start=np.array([0,0])):
                 for nbr in nbrs:
                     if (nbr == Nc):
                         print "failed to find next city"
-                        return
+                        return None, 99999999999
                     # check if we've already been here...
                     if (edges[ir][nbr,0] == -1):
                         # eliminate edges in other route...
