@@ -11,13 +11,13 @@ def NN_wrapper():
     score_min = 1e20
     while (1):
         start = np.random.randint(low=0, high=150000, size=2)
-        route, score = NN(cities=cities, start=start)
+        route, score = greeyNN(cities=cities, start=start)
         if (score < score_min):
             score_min = score
             start_min = start
             print "score_min, start_min: ", score_min, start_min
 
-def NN(cities=io.load_cities(), start=np.array([0,0])):
+def greedyNN(cities=io.load_cities(), start=np.array([0,0])):
     '''
     Nearest neighbor algorithm
     Routes are built incrementally in a greedy fashion
@@ -55,6 +55,7 @@ def NN(cities=io.load_cities(), start=np.array([0,0])):
     # keep track of distance as we go...
     dist = np.array([0.0, 0.0])
     
+    max_dist = np.array([0.0, 0.0])
     tree = cKDTree(cities)
     for ic in xrange(Nc-1):
         for ir in range(2):
@@ -86,13 +87,90 @@ def NN(cities=io.load_cities(), start=np.array([0,0])):
                         
             myroute[ir][ic+1] = nextcity
             dist[ir] += city_dist(cities, thiscity, nextcity)
+            max_dist[ir] = np.maximum(max_dist[ir], city_dist(cities, thiscity, nextcity))
             edges[ir][thiscity, 1] = nextcity
             edges[ir][nextcity, 0] = thiscity
                 
+    print dist, max_dist, city_dist(cities, myroute[0][0], myroute[0][Nc-1]), city_dist(cities, myroute[1][0], myroute[1][Nc-1])
     score = int(np.max(dist))
     print "start, score: ", start, score
     return myroute, score
 
-def greedy(cities=io.load_cities()):
+def contruct_lkh(cities=io.load_cities()):
+    Nc = cities.shape[0]
+
+    rr = io.read_route_lkh()
+
+    myroute = [rr, np.zeros(Nc, dtype=int)]
+    edges = [-np.ones([Nc,2], dtype=int), 
+             -np.ones([Nc,2], dtype=int)]
+    edges[0][myroute[0][0], 0] = 999999
+    edges[1][myroute[1][0], 0] = 999999
+
+    for ic in xrange(Nc-1):
+        edges[0][myroute[0][ic],   1] = myroute[0][ic+1]
+        edges[0][myroute[0][ic+1], 0] = myroute[0][ic]
+
+    dist = np.array([0.0])
+    tree = cKDTree(cities)
+    for ic in xrange(Nc-1):
+        if (ic%10000 == 0):
+            print "working on city: ", ic, int(np.max(dist))
+        
+        thiscity = myroute[1][ic] 
+        
+        assert(edges[1][thiscity, 0] >= 0)
+        assert(edges[1][thiscity, 1] == -1)
+
+        knbrs = 10
+        nextcity = -1
+        while(nextcity == -1):
+            nbrs_dist, nbrs = tree.query(cities[thiscity], knbrs)
+            for nbr in nbrs:
+                if (nbr == Nc):
+                    print "failed to find next city"
+                    return None, 99999999999
+                    # check if we've already been here...
+                if (edges[1][nbr,0] == -1):
+                    # eliminate edges in other route...
+                    if ((edges[0][thiscity, 0] != nbr) &
+                        (edges[0][thiscity, 1] != nbr)):
+                        nextcity = nbr
+                        break
+                
+            knbrs *= 2
+            
+        myroute[1][ic+1] = nextcity
+        dist += city_dist(cities, thiscity, nextcity)
+        edges[1][thiscity, 1] = nextcity
+        edges[1][nextcity, 0] = thiscity
+
+    '''
+    myroute = [rr, rr.copy()]
+    ir = 0
+    for ii in xrange(0,Nc,5):
+        myroute[(ir+1)%2][ii]   = myroute[ir][ii]
+        myroute[(ir+1)%2][ii+1] = myroute[ir][ii+3]
+        myroute[(ir+1)%2][ii+2] = myroute[ir][ii+1]
+        if (ii+4 < Nc):
+            myroute[(ir+1)%2][ii+3] = myroute[ir][ii+4]
+            myroute[(ir+1)%2][ii+4] = myroute[ir][ii+2]
+
+        ir = (ir+1)%2
+    # 0 3 1 4 2 5 8 6 9 7 10 
+    '''
+
+    return myroute
+
+def kruskal(cities=io.load_cities()):
     
+    Nc = cities.shape[0]
+    
+
+
+    # can't build route until the end
+    myroute = [np.zeros(Nc, dtype=int),
+               np.zeros(Nc, dtype=int)]
+
+
     return

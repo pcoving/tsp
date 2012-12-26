@@ -30,5 +30,6 @@ def calc_score(cities=io.load_cities(), route=io.load_route()):
             adj[route[ir][ic+1], route[ir][ic]] = True
             
             dist[ir] += mycity_dist(route[ir][ic], route[ir][ic+1])
-        
+    
+    print dist
     return int(np.max(dist))
