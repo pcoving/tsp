@@ -3,7 +3,7 @@ import innout as io
 import scipy.sparse as sparse
 from tools import city_dist
 
-def calc_score(cities=io.load_cities(), route=io.load_route()):
+def calc_score(cities, route=io.load_route()):
     Nc = cities.shape[0]
     
     # first make sure all cities are visited exactly once for both paths

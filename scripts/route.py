@@ -17,14 +17,15 @@ def NN_wrapper():
             start_min = start
             print "score_min, start_min: ", score_min, start_min
 
-def greedyNN(cities=io.load_cities(), start=np.array([0,0])):
+def greedyNN(cities, start=np.array([0,0])):
     '''
     Nearest neighbor algorithm
     Routes are built incrementally in a greedy fashion
     '''
     
     Nc = cities.shape[0]
-        
+    assert(Nc > 0)
+    
     assert((start[0] < Nc) & (start[1] < Nc) &
            (start[0] >= 0) & (start[1] >= 0))
     
@@ -32,7 +33,7 @@ def greedyNN(cities=io.load_cities(), start=np.array([0,0])):
                np.zeros(Nc, dtype=int)]
     myroute[0][0] = start[0]
     myroute[1][0] = start[1]
-            
+    
     '''
     the edges array keeps track of edges incident 
     to a city for each route
@@ -51,17 +52,16 @@ def greedyNN(cities=io.load_cities(), start=np.array([0,0])):
     # need to end up here
     edges[0][myroute[0][0], 0] = 999999
     edges[1][myroute[1][0], 0] = 999999
-
+    
     # keep track of distance as we go...
     dist = np.array([0.0, 0.0])
     
-    max_dist = np.array([0.0, 0.0])
     tree = cKDTree(cities)
     for ic in xrange(Nc-1):
+        if (ic%10000 == 0):
+            print "working on city: ", ic, int(np.max(dist))
         for ir in range(2):
-            #if (ic%10000 == 0):
-            #    print "working on city: ", ic, int(np.max(dist))
-                
+        
             thiscity = myroute[ir][ic] 
             
             assert(edges[ir][thiscity, 0] >= 0)
@@ -87,18 +87,77 @@ def greedyNN(cities=io.load_cities(), start=np.array([0,0])):
                         
             myroute[ir][ic+1] = nextcity
             dist[ir] += city_dist(cities, thiscity, nextcity)
-            max_dist[ir] = np.maximum(max_dist[ir], city_dist(cities, thiscity, nextcity))
             edges[ir][thiscity, 1] = nextcity
             edges[ir][nextcity, 0] = thiscity
                 
-    print dist, max_dist, city_dist(cities, myroute[0][0], myroute[0][Nc-1]), city_dist(cities, myroute[1][0], myroute[1][Nc-1])
     score = int(np.max(dist))
     print "start, score: ", start, score
     return myroute, score
 
-def contruct_lkh(cities=io.load_cities()):
+def opt2(cities, route, Niter=10000, name='test'):
     Nc = cities.shape[0]
+    assert(Nc > 0)
 
+    route = [route[0].copy(),
+             route[1].copy()]
+
+    edges = [-np.ones([Nc,2], dtype=int), 
+             -np.ones([Nc,2], dtype=int)]
+            
+    dist = np.array([0.0, 0.0])
+    for ir in range(2):
+        edges[ir][route[ir][0], 0] = 999999
+        edges[ir][route[ir][Nc-1], 1] = 999999
+        for ic in xrange(Nc-1):
+            dist[ir] += city_dist(cities, route[ir][ic], route[ir][ic+1])
+            edges[ir][route[ir][ic], 1] = route[ir][ic+1]
+            edges[ir][route[ir][ic+1], 0] = route[ir][ic]
+            
+        
+    if (dist[0] > dist[1]):
+        ir = 0
+    else:
+        ir = 1
+    iter = 0
+    while (iter < Niter):
+        ic = np.random.randint(low=0, high=Nc-1, size=2)
+        ic.sort()
+        rr = route[ir]
+        if (ic[1] > (ic[0]+1)):
+            if ((edges[(ir+1)%2][rr[ic[0]], 0] != rr[ic[1]]) &
+                (edges[(ir+1)%2][rr[ic[0]], 1] != rr[ic[1]]) &
+                (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[1]+1]) &
+                (edges[(ir+1)%2][rr[ic[0]+1], 1] != rr[ic[1]+1])):
+
+                dist_old = city_dist(cities, rr[ic[0]],   rr[ic[0]+1]) +\
+                           city_dist(cities, rr[ic[1]],   rr[ic[1]+1])
+                dist_new = city_dist(cities, rr[ic[0]],   rr[ic[1]]) +\
+                           city_dist(cities, rr[ic[0]+1], rr[ic[1]+1])
+                if (dist_new < dist_old):
+                    route_new = rr.copy();
+                    
+                    count = ic[0]+1
+                    for ii in xrange(ic[1], ic[0], -1):
+                        route_new[count] = rr[ii]
+                        count = count + 1
+                
+                    route[ir] = route_new
+                    dist[ir] += (dist_new - dist_old)
+                    iter += 1
+                    score = int(np.max(dist))
+                    print score
+                    if (iter%50 == 0):
+                        io.write_route(route, name + '_' + str(score))
+                    
+        if (dist[ir] < dist[(ir+1)%2]):
+            ir = (ir+1)%2
+
+    return route
+
+def contruct_lkh(cities):
+    Nc = cities.shape[0]
+    assert(Nc > 0)
+    
     rr = io.read_route_lkh()
 
     myroute = [rr, np.zeros(Nc, dtype=int)]
@@ -161,16 +220,3 @@ def contruct_lkh(cities=io.load_cities()):
     '''
 
     return myroute
-
-def kruskal(cities=io.load_cities()):
-    
-    Nc = cities.shape[0]
-    
-
-
-    # can't build route until the end
-    myroute = [np.zeros(Nc, dtype=int),
-               np.zeros(Nc, dtype=int)]
-
-
-    return
