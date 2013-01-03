@@ -94,7 +94,13 @@ def greedyNN(cities, start=np.array([0,0])):
     print "start, score: ", start, score
     return myroute, score
 
-def opt2(cities, route, Niter=10000, name='test'):
+def opt2(cities, route, Niter=10000, name='test', look_ahead=9999999):
+
+    '''
+    next step: how to generalize 2-opt so that it includes
+    both paths?  one path demonstrates significant 'bow-tieing'
+    and could benefit from a more 'holistic' approach
+    '''
     Nc = cities.shape[0]
     assert(Nc > 0)
 
@@ -123,7 +129,7 @@ def opt2(cities, route, Niter=10000, name='test'):
         ic = np.random.randint(low=0, high=Nc-1, size=2)
         ic.sort()
         rr = route[ir]
-        if (ic[1] > (ic[0]+1)):
+        if ((ic[1] > (ic[0]+1)) & (ic[1] < (ic[0]+look_ahead))):
             if ((edges[(ir+1)%2][rr[ic[0]], 0] != rr[ic[1]]) &
                 (edges[(ir+1)%2][rr[ic[0]], 1] != rr[ic[1]]) &
                 (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[1]+1]) &
