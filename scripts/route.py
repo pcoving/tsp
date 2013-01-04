@@ -2,6 +2,7 @@ import numpy as np
 import innout as io
 from scipy.spatial import cKDTree
 from tools import city_dist
+from score import calc_score
 
 def NN_wrapper():
     
@@ -94,7 +95,7 @@ def greedyNN(cities, start=np.array([0,0])):
     print "start, score: ", start, score
     return myroute, score
 
-def opt2(cities, route, Niter=10000, name='test', look_ahead=9999999):
+def opt2(cities, route, name='test', look_ahead=9999999, checkpoint=50):
 
     '''
     next step: how to generalize 2-opt so that it includes
@@ -125,11 +126,11 @@ def opt2(cities, route, Niter=10000, name='test', look_ahead=9999999):
     else:
         ir = 1
     iter = 0
-    while (iter < Niter):
+    while (1):
         ic = np.random.randint(low=0, high=Nc-1, size=2)
         ic.sort()
-        rr = route[ir]
         if ((ic[1] > (ic[0]+1)) & (ic[1] < (ic[0]+look_ahead))):
+            rr = route[ir]
             if ((edges[(ir+1)%2][rr[ic[0]], 0] != rr[ic[1]]) &
                 (edges[(ir+1)%2][rr[ic[0]], 1] != rr[ic[1]]) &
                 (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[1]+1]) &
@@ -146,13 +147,21 @@ def opt2(cities, route, Niter=10000, name='test', look_ahead=9999999):
                     for ii in xrange(ic[1], ic[0], -1):
                         route_new[count] = rr[ii]
                         count = count + 1
-                
+
+                    edges[ir][route[ir][0], 0] = 999999
+                    edges[ir][route[ir][Nc-1], 1] = 999999
+                    for ic in xrange(Nc-1):
+                        edges[ir][route[ir][ic], 1] = route[ir][ic+1]
+                        edges[ir][route[ir][ic+1], 0] = route[ir][ic]
+                                                                
                     route[ir] = route_new
                     dist[ir] += (dist_new - dist_old)
+                    
                     iter += 1
                     score = int(np.max(dist))
                     print score
-                    if (iter%50 == 0):
+                    if (iter%checkpoint == 0):
+                        calc_score(cities, route)
                         io.write_route(route, name + '_' + str(score))
                     
         if (dist[ir] < dist[(ir+1)%2]):
