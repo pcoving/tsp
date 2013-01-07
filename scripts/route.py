@@ -1,8 +1,7 @@
 import numpy as np
 import innout as io
 from scipy.spatial import cKDTree
-from tools import city_dist
-from score import calc_score
+from tools import city_dist, calc_score
 
 def NN_wrapper():
     
