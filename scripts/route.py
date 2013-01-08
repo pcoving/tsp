@@ -4,7 +4,13 @@ from scipy.spatial import cKDTree
 from tools import city_dist, calc_score
 
 def NN_wrapper():
-    
+    '''
+    Wraps the nearest neighbor algorithm, trying different starting
+    points.  Prints to screen the minimum score while running.
+    Here some of the best ones:
+    7844999 [137433 145655]
+    7834793 [45951 97080]
+    '''
     cities=io.load_cities()
     
     start_min = None
@@ -20,7 +26,10 @@ def NN_wrapper():
 def NN(cities, start=np.array([0,0])):
     '''
     Nearest neighbor algorithm
-    Routes are built incrementally in a greedy fashion
+    Input are indicies of starting cities
+    Routes are built incrementally in a greedy fashion, cycling
+    from one route to another
+    gives solutions in the 7.9M range
     '''
     
     Nc = cities.shape[0]
@@ -56,22 +65,28 @@ def NN(cities, start=np.array([0,0])):
     # keep track of distance as we go...
     dist = np.array([0.0, 0.0])
     
+    # build kdtree once for cities
     tree = cKDTree(cities)
     for ic in xrange(Nc-1):
-        if (ic%10000 == 0):
-            print "working on city: ", ic, int(np.max(dist))
         for ir in range(2):
         
             thiscity = myroute[ir][ic] 
-            
+        
+            # make sure this city has degree exactly equal to 1
             assert(edges[ir][thiscity, 0] >= 0)
             assert(edges[ir][thiscity, 1] == -1)
             
+            # start looking at the nearest 10 neighbors,
+            # increasing this number until a valid city is found
+            # to continue the tour
             knbrs = 10
             nextcity = -1
             while(nextcity == -1):
                 nbrs_dist, nbrs = tree.query(cities[thiscity], knbrs)
                 for nbr in nbrs:
+                    # it's possible that there are no valid cities left,
+                    # right at the end - rare, but has happened
+                    # i.e. the last edge is already used by the other tour
                     if (nbr == Nc):
                         print "failed to find next city"
                         return None, 99999999999
@@ -82,63 +97,86 @@ def NN(cities, start=np.array([0,0])):
                             (edges[(ir+1)%2][thiscity, 1] != nbr)):
                             nextcity = nbr
                             break
-                
+                # we didn't find a valid city, so increase number of neighbors...
                 knbrs *= 2
                         
+            # add next city to route and add distance
             myroute[ir][ic+1] = nextcity
             dist[ir] += city_dist(cities, thiscity, nextcity)
+            
+            # fill in edges array
             edges[ir][thiscity, 1] = nextcity
             edges[ir][nextcity, 0] = thiscity
                 
     score = int(np.max(dist))
-    print "start, score: ", start, score
     return myroute, score
 
 def greedy():
 
     '''
-    use kdtree to build the best candidate edge for each city
-    with degree < 2 that doesn't create a cycle
+    To be done...
     '''
     
     return
 
-def opt2(cities, route, name='test', look_ahead=9999999, checkpoint=50):
+def opt2(cities, route, look_ahead=9999999, checkpoint=50, name='test'):
 
     '''
-    next step: how to generalize 2-opt so that it includes
-    both paths?  one path demonstrates significant 'bow-tieing'
-    and could benefit from a more 'holistic' approach
+    opt-2 takes a route and shortens it by taking 
+    two edges and un-bowties them like so:
+    
+ 
+    *     *      *-----*
+     \   /
+      \ /
+      /\    ==>    
+     /  \
+    *    *       *-----*
+
+    checkpoint is number of edges un-bowtied before writing out
+    the route as name_<dist>.csv
+    look_ahead is an attempt to make it more efficient - for a given edge,
+    will only look for edges to perform 2-opt a specified number ahead in route
     '''
+    
     Nc = cities.shape[0]
     assert(Nc > 0)
-
+    
+    # don't want to modify input route...
     route = [route[0].copy(),
              route[1].copy()]
 
+    # fill edges (defined in NN above) and compute distance
+    # for input route
     edges = [-np.ones([Nc,2], dtype=int), 
              -np.ones([Nc,2], dtype=int)]
-            
+    
     dist = np.array([0.0, 0.0])
     for ir in range(2):
-        edges[ir][route[ir][0], 0] = 999999
+        edges[ir][route[ir][0],    0] = 999999
         edges[ir][route[ir][Nc-1], 1] = 999999
         for ic in xrange(Nc-1):
             dist[ir] += city_dist(cities, route[ir][ic], route[ir][ic+1])
-            edges[ir][route[ir][ic], 1] = route[ir][ic+1]
+            edges[ir][route[ir][ic],   1] = route[ir][ic+1]
             edges[ir][route[ir][ic+1], 0] = route[ir][ic]
             
-        
+    # route we're currently optimizing is stored in ir 
+    # (always trying to push down maximum distance)
     if (dist[0] > dist[1]):
         ir = 0
     else:
         ir = 1
     iter = 0
     while (1):
+        # pick two random cities
         ic = np.random.randint(low=0, high=Nc-1, size=2)
         ic.sort()
+        
         if ((ic[1] > (ic[0]+1)) & (ic[1] < (ic[0]+look_ahead))):
+            # just an alias to shorten things...
             rr = route[ir]
+            
+            # check if un-bowtieing conflicts with other tour...
             if ((edges[(ir+1)%2][rr[ic[0]], 0] != rr[ic[1]]) &
                 (edges[(ir+1)%2][rr[ic[0]], 1] != rr[ic[1]]) &
                 (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[1]+1]) &
@@ -151,11 +189,14 @@ def opt2(cities, route, name='test', look_ahead=9999999, checkpoint=50):
                 if (dist_new < dist_old):
                     route_new = rr.copy();
                     
+                    # rearrange route
                     count = ic[0]+1
                     for ii in xrange(ic[1], ic[0], -1):
                         route_new[count] = rr[ii]
                         count = count + 1
 
+                    # fully rebuild edges because I had a bug when I was trying to be clever...
+                    # this should be rewritten!
                     edges[ir][route[ir][0], 0] = 999999
                     edges[ir][route[ir][Nc-1], 1] = 999999
                     for ic in xrange(Nc-1):
@@ -169,15 +210,26 @@ def opt2(cities, route, name='test', look_ahead=9999999, checkpoint=50):
                     score = int(np.max(dist))
                     print score
                     if (iter%checkpoint == 0):
+                        # when we checkpoint make sure tours are disjoint and valid
                         calc_score(cities, route)
                         io.write_route(route, name + '_' + str(score))
-                    
+        
+        # switch to other route if it's longer
         if (dist[ir] < dist[(ir+1)%2]):
             ir = (ir+1)%2
 
     return route
 
 def contruct_lkh(cities):
+    '''
+    reads in a nearly optimal single tour produced by the LKH package
+    and constructs a disjoint tour solution
+    route 0: 0 1 2 3 4
+    route 1: 0 3 1 4 2
+    alternates between tours
+    gives solutions in the 8.6M range
+    '''
+
     Nc = cities.shape[0]
     assert(Nc > 0)
     
@@ -194,6 +246,5 @@ def contruct_lkh(cities):
             myroute[(ir+1)%2][ii+4] = myroute[ir][ii+2]
 
         ir = (ir+1)%2
-    # 0 3 1 4 2 5 8 6 9 7 10 
-    
+
     return myroute

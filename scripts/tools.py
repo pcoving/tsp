@@ -33,6 +33,7 @@ def calc_score(cities, route):
     return score
 
 def city_dist(cities, ic0, ic1):
+    # for debugging...
     #assert(ic0 >= 0)
     #assert(ic1 >= 0)
     
