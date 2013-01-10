@@ -159,7 +159,7 @@ def opt2(cities, route, look_ahead=9999999, checkpoint=50, name='test'):
             dist[ir] += city_dist(cities, route[ir][ic], route[ir][ic+1])
             edges[ir][route[ir][ic],   1] = route[ir][ic+1]
             edges[ir][route[ir][ic+1], 0] = route[ir][ic]
-            
+    
     # route we're currently optimizing is stored in ir 
     # (always trying to push down maximum distance)
     if (dist[0] > dist[1]):
@@ -169,50 +169,49 @@ def opt2(cities, route, look_ahead=9999999, checkpoint=50, name='test'):
     iter = 0
     while (1):
         # pick two random cities
-        ic = np.random.randint(low=0, high=Nc-1, size=2)
-        ic.sort()
+        ic0 = np.random.randint(low=0,     high=Nc-2)
+        ic1 = np.random.randint(low=ic0+1, high=np.min([ic0+look_ahead, Nc-1]))
         
-        if ((ic[1] > (ic[0]+1)) & (ic[1] < (ic[0]+look_ahead))):
-            # just an alias to shorten things...
-            rr = route[ir]
-            
+        # just an alias to make things shorter...
+        rr = route[ir]
+        
+        dist_old = city_dist(cities, rr[ic0],   rr[ic0+1]) +\
+                   city_dist(cities, rr[ic1],   rr[ic1+1])
+        dist_new = city_dist(cities, rr[ic0],   rr[ic1]) +\
+                   city_dist(cities, rr[ic0+1], rr[ic1+1])
+        if (dist_new < dist_old):
+    
             # check if un-bowtieing conflicts with other tour...
-            if ((edges[(ir+1)%2][rr[ic[0]], 0] != rr[ic[1]]) &
-                (edges[(ir+1)%2][rr[ic[0]], 1] != rr[ic[1]]) &
-                (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[1]+1]) &
-                (edges[(ir+1)%2][rr[ic[0]+1], 1] != rr[ic[1]+1])):
-
-                dist_old = city_dist(cities, rr[ic[0]],   rr[ic[0]+1]) +\
-                           city_dist(cities, rr[ic[1]],   rr[ic[1]+1])
-                dist_new = city_dist(cities, rr[ic[0]],   rr[ic[1]]) +\
-                           city_dist(cities, rr[ic[0]+1], rr[ic[1]+1])
-                if (dist_new < dist_old):
-                    route_new = rr.copy();
+            if ((edges[(ir+1)%2][rr[ic0], 0] != rr[ic1]) &
+                (edges[(ir+1)%2][rr[ic0], 1] != rr[ic1]) &
+                (edges[(ir+1)%2][rr[ic0+1], 0] != rr[ic1+1]) &
+                (edges[(ir+1)%2][rr[ic0+1], 1] != rr[ic1+1])):
+                                
+                route_new = rr.copy();
+                # rearrange route and update edges
+                count = ic0+1
+                edges[ir][rr[ic0], 1] = rr[ic1]
+                edges[ir][rr[ic1], 0] = rr[ic0]
+                for ii in xrange(ic1, ic0, -1):
+                    route_new[count] = rr[ii]
+                    edges[ir][rr[ii], 1] = rr[ii-1]
+                    if (ii != ic0+1):
+                        edges[ir][rr[ii-1], 0] = rr[ii]
+                    count += 1
+                edges[ir][rr[ic1+1], 0] = rr[ic0+1]
+                edges[ir][rr[ic0+1], 1] = rr[ic1+1]
                     
-                    # rearrange route
-                    count = ic[0]+1
-                    for ii in xrange(ic[1], ic[0], -1):
-                        route_new[count] = rr[ii]
-                        count = count + 1
-
-                    # fully rebuild edges because I had a bug when I was trying to be clever...
-                    # this should be rewritten!
-                    edges[ir][route[ir][0], 0] = 999999
-                    edges[ir][route[ir][Nc-1], 1] = 999999
-                    for ic in xrange(Nc-1):
-                        edges[ir][route[ir][ic], 1] = route[ir][ic+1]
-                        edges[ir][route[ir][ic+1], 0] = route[ir][ic]
-                                                                
-                    route[ir] = route_new
-                    dist[ir] += (dist_new - dist_old)
-                    
-                    iter += 1
-                    score = int(np.max(dist))
-                    print score
-                    if (iter%checkpoint == 0):
-                        # when we checkpoint make sure tours are disjoint and valid
-                        calc_score(cities, route)
-                        io.write_route(route, name + '_' + str(score))
+                route[ir] = route_new                    
+                dist[ir] += (dist_new - dist_old)
+                
+                iter += 1
+                score = int(np.max(dist))
+                print score
+                if (iter%checkpoint == 0):
+                    # when we checkpoint make sure tours are disjoint and valid
+                    print score, calc_score(cities, route)
+                    #assert(score == calc_score(cities, route))
+                    io.write_route(route, name + '_' + str(score))
         
         # switch to other route if it's longer
         if (dist[ir] < dist[(ir+1)%2]):
