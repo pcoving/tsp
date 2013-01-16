@@ -219,6 +219,222 @@ def opt2(cities, route, look_ahead=9999999, checkpoint=50, name='test'):
 
     return route
 
+
+def opt3(cities, route, look_ahead=9999999, checkpoint=50, name='test'):
+        
+    Nc = cities.shape[0]
+    assert(Nc > 0)
+    
+    # don't want to modify input route...
+    route = [route[0].copy(),
+             route[1].copy()]
+
+    # fill edges (defined in NN above) and compute distance
+    # for input route
+    edges = [-np.ones([Nc,2], dtype=int), 
+             -np.ones([Nc,2], dtype=int)]
+    
+    dist = np.array([0.0, 0.0])
+    for ir in range(2):
+        edges[ir][route[ir][0],    0] = 999999
+        edges[ir][route[ir][Nc-1], 1] = 999999
+        for ic in xrange(Nc-1):
+            dist[ir] += city_dist(cities, route[ir][ic], route[ir][ic+1])
+            edges[ir][route[ir][ic],   1] = route[ir][ic+1]
+            edges[ir][route[ir][ic+1], 0] = route[ir][ic]
+    
+    # route we're currently optimizing is stored in ir 
+    # (always trying to push down maximum distance)
+    if (dist[0] > dist[1]):
+        ir = 0
+    else:
+        ir = 1
+    iter = 0
+    while (1):
+        # pick three random cities
+        ic = np.zeros(3, dtype=int)
+        ic[0] = np.random.randint(low=0,     high=Nc-3)
+        ic[1] = np.random.randint(low=ic[0]+1, high=np.min([ic[0]+look_ahead, Nc-2]))
+        ic[2] = np.random.randint(low=ic[1]+1, high=np.min([ic[1]+look_ahead, Nc-1]))
+        #ic = np.array([137293, 137367, 137369])       
+        rr = route[ir]
+        
+        found = False
+    
+        dist_old = city_dist(cities, rr[ic[0]], rr[ic[0]+1]) +\
+            city_dist(cities, rr[ic[1]], rr[ic[1]+1]) +\
+            city_dist(cities, rr[ic[2]], rr[ic[2]+1]) 
+        
+        dist_new = city_dist(cities, rr[ic[0]], rr[ic[1]+1]) +\
+            city_dist(cities, rr[ic[2]], rr[ic[0]+1]) +\
+            city_dist(cities, rr[ic[1]], rr[ic[2]+1])
+        if (dist_new < dist_old):
+            if ((edges[(ir+1)%2][rr[ic[0]], 0] != rr[ic[1]+1]) &
+                (edges[(ir+1)%2][rr[ic[0]], 1] != rr[ic[1]+1]) &
+                (edges[(ir+1)%2][rr[ic[2]], 0] != rr[ic[0]+1]) &
+                (edges[(ir+1)%2][rr[ic[2]], 1] != rr[ic[0]+1]) &
+                (edges[(ir+1)%2][rr[ic[1]], 0] != rr[ic[2]+1]) &
+                (edges[(ir+1)%2][rr[ic[1]], 1] != rr[ic[2]+1]) ):
+                print 0
+                route_new = rr.copy();
+                # rearrange route
+                count = ic[0]+1
+                for ii in xrange(ic[1]+1, ic[2]+1):
+                    route_new[count] = rr[ii]
+                    count += 1
+                for ii in xrange(ic[0]+1, ic[1]+1):
+                    route_new[count] = rr[ii]
+                    count += 1
+                for ii in xrange(ic[2]+1, ic[0]+1):
+                    route_new[count] = rr[ii]
+                    count += 1
+                    
+                route[ir] = route_new                    
+                dist[ir] += (dist_new - dist_old)
+                
+                found = True
+        
+        if (found != True):
+            dist_new = city_dist(cities, rr[ic[0]],   rr[ic[1]+1]) +\
+                       city_dist(cities, rr[ic[2]],   rr[ic[1]]) +\
+                       city_dist(cities, rr[ic[0]+1], rr[ic[2]+1])
+            if (dist_new < dist_old):
+                if ((edges[(ir+1)%2][rr[ic[0]], 0]   != rr[ic[1]+1]) &
+                    (edges[(ir+1)%2][rr[ic[0]], 1]   != rr[ic[1]+1]) &
+                    (edges[(ir+1)%2][rr[ic[2]], 0]   != rr[ic[1]]) &
+                    (edges[(ir+1)%2][rr[ic[2]], 1]   != rr[ic[1]]) &
+                    (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[2]+1]) &
+                    (edges[(ir+1)%2][rr[ic[0]+1], 1] != rr[ic[2]+1]) ):
+                    print 1
+                    route_new = rr.copy();
+                    
+                    count = ic[0]+1
+                    for ii in xrange(ic[1]+1, ic[2]+1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    for ii in xrange(ic[1], ic[0], -1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    for ii in xrange(ic[2]+1, ic[0]+1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    
+                    route[ir] = route_new                    
+                    dist[ir] += (dist_new - dist_old)
+                
+                    found = True
+        
+        if (found != True):
+            dist_new = city_dist(cities, rr[ic[0]],   rr[ic[2]]) +\
+                       city_dist(cities, rr[ic[1]+1], rr[ic[0]+1]) +\
+                       city_dist(cities, rr[ic[1]],   rr[ic[2]+1])
+            if (dist_new < dist_old):
+                if ((edges[(ir+1)%2][rr[ic[0]], 0]   != rr[ic[2]]) &
+                    (edges[(ir+1)%2][rr[ic[0]], 1]   != rr[ic[2]]) &
+                    (edges[(ir+1)%2][rr[ic[1]+1], 0] != rr[ic[0]+1]) &
+                    (edges[(ir+1)%2][rr[ic[1]+1], 1] != rr[ic[0]+1]) &
+                    (edges[(ir+1)%2][rr[ic[1]], 0]   != rr[ic[2]+1]) &
+                    (edges[(ir+1)%2][rr[ic[1]], 1]   != rr[ic[2]+1]) ):
+                    print 2
+                    route_new = rr.copy();
+                    
+                    count = ic[0]+1
+                    for ii in xrange(ic[2], ic[1], -1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    for ii in xrange(ic[0]+1, ic[1]+1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    for ii in xrange(ic[2]+1, ic[0]+1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    
+                    route[ir] = route_new                    
+                    dist[ir] += (dist_new - dist_old)
+                
+                    found = True
+                    
+        if (found != True):
+            dist_new = city_dist(cities, rr[ic[0]],   rr[ic[1]]) +\
+                       city_dist(cities, rr[ic[0]+1], rr[ic[2]]) +\
+                       city_dist(cities, rr[ic[1]+1], rr[ic[2]+1])
+            if (dist_new < dist_old):
+                if ((edges[(ir+1)%2][rr[ic[0]], 0]   != rr[ic[1]]) &
+                    (edges[(ir+1)%2][rr[ic[0]], 1]   != rr[ic[1]]) &
+                    (edges[(ir+1)%2][rr[ic[0]+1], 0] != rr[ic[2]]) &
+                    (edges[(ir+1)%2][rr[ic[0]+1], 1] != rr[ic[2]]) &
+                    (edges[(ir+1)%2][rr[ic[1]+1], 0] != rr[ic[2]+1]) &
+                    (edges[(ir+1)%2][rr[ic[1]+1], 1] != rr[ic[2]+1]) ):
+                    print 3
+                    route_new = rr.copy();
+                    
+                    count = ic[0]+1
+                    for ii in xrange(ic[1], ic[0], -1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    for ii in xrange(ic[2], ic[1], -1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    for ii in xrange(ic[2]+1, ic[0]+1):
+                        route_new[count] = rr[ii]
+                        count += 1
+                    
+                    route[ir] = route_new                    
+                    dist[ir] += (dist_new - dist_old)
+                
+                    found = True
+
+        if (found == True):
+            # rebuild edges
+            edges[ir][route[ir][0],    0] = 999999
+            edges[ir][route[ir][Nc-1], 1] = 999999
+            for ic in xrange(Nc-1):
+                edges[ir][route[ir][ic],   1] = route[ir][ic+1]
+                edges[ir][route[ir][ic+1], 0] = route[ir][ic]
+                
+            iter += 1
+            score = int(np.max(dist))
+            print score
+            if (iter%checkpoint == 0):
+                # when we checkpoint make sure tours are disjoint and valid
+                print score, calc_score(cities, route)
+                #assert(score == calc_score(cities, route))
+                io.write_route(route, name + '_' + str(score))
+        
+        # switch to other route if it's longer
+        if (dist[ir] < dist[(ir+1)%2]):
+            ir = (ir+1)%2
+
+    return route
+
+def charge_start(cities, route):
+
+    '''
+    reroute starting point optimally
+    '''
+    Nc = cities.shape[0]
+    new_route = [np.zeros(Nc, dtype=int),
+                 np.zeros(Nc, dtype=int)]
+
+    for ir in range(2):
+        max_ind = -1
+        max_dist = 0.0
+        for ic in xrange(Nc-1):
+            dist = city_dist(cities, route[ir][ic], route[ir][ic+1])
+            if (dist > max_dist):
+                max_dist = dist
+                max_ind = ic
+        print route[ir][max_ind], route[ir][max_ind+1] 
+        count = 0
+        for ic in xrange(max_ind+1,Nc):
+            new_route[ir][count] = route[ir][ic]
+            count += 1
+        for ic in xrange(max_ind+1):
+            new_route[ir][count] = route[ir][ic]
+            count += 1
+    
+    return new_route
+
 def contruct_lkh(cities):
     '''
     reads in a nearly optimal single tour produced by the LKH package

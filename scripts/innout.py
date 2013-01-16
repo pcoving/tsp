@@ -7,6 +7,14 @@ def load_cities():
     return np.loadtxt(path, delimiter=',', unpack=False,
                       usecols=[1,2], dtype=int, skiprows=1)
 
+def read_two_routes(name1="../data/blend_tsp.csv", name2="../data/blend_twin.csv"):
+    
+    return [np.loadtxt(name1, delimiter=',', unpack=False,
+                       usecols=[0,], dtype=int)-1,
+            np.loadtxt(name2, delimiter=',', unpack=False,
+                       usecols=[0,], dtype=int)-1]
+
+
 def write_cities_lkh(cities, name='santa_cities.tsp'):
 
     Nc = cities.shape[0]
